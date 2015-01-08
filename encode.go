@@ -23,25 +23,30 @@ OR, (if compiled) ./encode.go <message> <key>
 <message> is a string of lowercase letters.
 <key> is an integer.
 */
+
+// Package main is the default package containing the encoder.
 package main
 
 import (
-	"errors"
-	"fmt"
-	"math"
-	"os"
-	"strconv"
-	"unicode"
-	"unicode/utf8"
+	"errors"       // For making error if message isn't all lowercase letters.
+	"fmt"          // For printing encoded result, usage, errors, and for converting ints to strings.
+	"math"         // For computing number of digits in key's digit string.
+	"os"           // For extracting command line args.
+	"strconv"      // For parsing integer key.
+	"unicode"      // For ensuring message is all lowercase.
+	"unicode/utf8" // For convering "a" into a rune.
 )
 
-// Print the usage.
+// usage prints to stdout a string explaining how to use this program.
 func usage() {
 	fmt.Println("Encode a message (string of lowercase letters) using a key (integer)")
 	fmt.Println("Usage: go run encode.go <message> <key>")
 	fmt.Println("OR (if compiled) ./encode.go <message> <key>")
 }
 
+// encode applies the Vigenere cipher to a message using the given key. It will return
+// the encoded message (if there was no error) and any error that occured (or nil if no error
+// ocurred).
 func encode(key int, message string) (string, error) {
 	result := ""
 
@@ -52,18 +57,24 @@ func encode(key int, message string) (string, error) {
 		if !unicode.IsLower(runeValue) {
 			return "", errors.New(fmt.Sprintf("%q is not a lowercase letter", runeValue))
 		} else {
+			// Encode the next letter.
 			result += string(rotate(runeValue, keyDigits[i%len(keyDigits)]))
 		}
 	}
 	return result, nil
 }
 
+// rotate shifts the given letter a specified rotation (i.e. number of letter spots). It returns
+// the rotated letter. For example, rotate("a", 2) gives "c" (because rotating "a" twice gives
+// "a" -> "b" -> "c", where the arrows denote rotation).
 func rotate(letter rune, rotation int) rune {
 	lowercaseA, _ := utf8.DecodeRuneInString("a")
 	offsetFromLowercaseA := int(letter) - int(lowercaseA)
 	return rune((offsetFromLowercaseA+rotation)%26 + int(lowercaseA))
 }
 
+// toDigitSlice converts an integer into a slice where each element is a digit of the integer
+// (the digits appear in order, of course).
 func toDigitSlice(key int) []int {
 	// Make a slice with 0 length and log_10(key) + 1 capacity.
 	digitSlice := make([]int, 0, int(math.Log10(float64(key)+1)))
@@ -82,6 +93,7 @@ func toDigitSlice(key int) []int {
 	return digitSlice
 }
 
+// main parses the command line arguments, does the encoding, and prints the results.
 func main() {
 	// Ensure correct number of arguments.
 	if len(os.Args) < 3 {
