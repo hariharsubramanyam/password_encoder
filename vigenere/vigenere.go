@@ -23,31 +23,21 @@ OR, (if compiled) ./encode.go <message> <key>
 <message> is a string of lowercase letters.
 <key> is an integer.
 */
-
-// Package main is the default package containing the encoder.
-package main
+package vigenere
 
 import (
 	"errors"       // For making error if message isn't all lowercase letters.
 	"fmt"          // For printing encoded result, usage, errors, and for converting ints to strings.
 	"math"         // For computing number of digits in key's digit string.
-	"os"           // For extracting command line args.
 	"strconv"      // For parsing integer key.
 	"unicode"      // For ensuring message is all lowercase.
 	"unicode/utf8" // For convering "a" into a rune.
 )
 
-// usage prints to stdout a string explaining how to use this program.
-func usage() {
-	fmt.Println("Encode a message (string of lowercase letters) using a key (integer)")
-	fmt.Println("Usage: go run encode.go <message> <key>")
-	fmt.Println("OR (if compiled) ./encode.go <message> <key>")
-}
-
 // encode applies the Vigenere cipher to a message using the given key. It will return
 // the encoded message (if there was no error) and any error that occured (or nil if no error
 // ocurred).
-func encode(key int, message string) (string, error) {
+func Encode(key int, message string) (string, error) {
 	result := ""
 
 	keyDigits := toDigitSlice(key)
@@ -92,31 +82,3 @@ func toDigitSlice(key int) []int {
 
 	return digitSlice
 }
-
-// main parses the command line arguments, does the encoding, and prints the results.
-func main() {
-	// Ensure correct number of arguments.
-	if len(os.Args) < 3 {
-		usage()
-	} else {
-		// Extract arguments.
-		message := os.Args[1]
-		key, err := strconv.ParseInt(os.Args[2], 10, 0)
-
-		// Ensure key is integer.
-		if err != nil {
-			usage()
-			fmt.Println("Your <key> was not an integer")
-		} else {
-			// Attempt encoding.
-			encoded, err := encode(int(key), message)
-
-			// Print either error or encoding.
-			if err != nil {
-				fmt.Println(err)
-			} else {
-				fmt.Println(encoded)
-			} // else (for failed encoding check)
-		} // else (for failed integer parse check)
-	} // else (for # command line args check)
-} // main
